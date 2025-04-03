@@ -1,0 +1,3 @@
+# Hashes of file build rules.
+c5e332b979b0f7c46f75cf0ac5afdbc9 CMakeFiles/QZTool_autogen
+b6969304ace09ce6d396150190a2189b QZTool_autogen/timestamp

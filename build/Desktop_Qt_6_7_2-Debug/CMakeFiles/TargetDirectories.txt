@@ -1,0 +1,9 @@
+/home/dawid/Code/qt/QZTool/build/Desktop_Qt_6_7_2-Debug/CMakeFiles/QZTool.dir
+/home/dawid/Code/qt/QZTool/build/Desktop_Qt_6_7_2-Debug/CMakeFiles/edit_cache.dir
+/home/dawid/Code/qt/QZTool/build/Desktop_Qt_6_7_2-Debug/CMakeFiles/rebuild_cache.dir
+/home/dawid/Code/qt/QZTool/build/Desktop_Qt_6_7_2-Debug/CMakeFiles/list_install_components.dir
+/home/dawid/Code/qt/QZTool/build/Desktop_Qt_6_7_2-Debug/CMakeFiles/install.dir
+/home/dawid/Code/qt/QZTool/build/Desktop_Qt_6_7_2-Debug/CMakeFiles/install/local.dir
+/home/dawid/Code/qt/QZTool/build/Desktop_Qt_6_7_2-Debug/CMakeFiles/install/strip.dir
+/home/dawid/Code/qt/QZTool/build/Desktop_Qt_6_7_2-Debug/CMakeFiles/QZTool_autogen_timestamp_deps.dir
+/home/dawid/Code/qt/QZTool/build/Desktop_Qt_6_7_2-Debug/CMakeFiles/QZTool_autogen.dir
