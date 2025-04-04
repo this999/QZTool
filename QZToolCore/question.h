@@ -21,7 +21,7 @@
 
 class Question {
 public:
-    Question() = delete;
+    Question() = default;
     Question(QString contents, QStringList answers, uint indexOfCorrectAnswer);
 
     void setContents(const QString &contents);
