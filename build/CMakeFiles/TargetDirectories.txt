@@ -1,8 +1,0 @@
-/home/dawid/Code/qt/QZTool/build/CMakeFiles/QZTool.dir
-/home/dawid/Code/qt/QZTool/build/CMakeFiles/edit_cache.dir
-/home/dawid/Code/qt/QZTool/build/CMakeFiles/rebuild_cache.dir
-/home/dawid/Code/qt/QZTool/build/CMakeFiles/list_install_components.dir
-/home/dawid/Code/qt/QZTool/build/CMakeFiles/install.dir
-/home/dawid/Code/qt/QZTool/build/CMakeFiles/install/local.dir
-/home/dawid/Code/qt/QZTool/build/CMakeFiles/install/strip.dir
-/home/dawid/Code/qt/QZTool/build/CMakeFiles/QZTool_autogen.dir
