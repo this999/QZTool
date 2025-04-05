@@ -29,6 +29,8 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         ${PROJECT_SOURCES}
         QZToolCore/question.cpp
         QZToolCore/question.h
+        QZToolCore/question_manager.h
+        QZToolCore/question_manager.cpp
     )
 else()
     add_executable(QZTool ${PROJECT_SOURCES} QZToolCore/question.cpp QZToolCore/question.h)

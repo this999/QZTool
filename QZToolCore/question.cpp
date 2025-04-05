@@ -12,7 +12,7 @@ Question::Question(QString contents, QStringList answers, uint indexOfCorrectAns
     }
 }
 
-void Question::setContents(const QString &contents) {
+void Question::setContents(const QString &contents) noexcept {
     this->contents = contents;
 }
 
@@ -23,22 +23,43 @@ void Question::setAnswers(const QStringList &answers) {
     this->answers = answers;
 }
 
-void Question::setIndexOfCorrectAnswer(const uint indexOfCorrectAnswer) {
+void Question::setIndexOfCorrectAnswer(const uint indexOfCorrectAnswer) noexcept {
     this->indexOfCorrectAnswer = indexOfCorrectAnswer;
 }
 
-QString Question::getContents() const {
+void Question::changeAnswer(const size_t index, const QString &newAnswer) {
+    if (index < answers.size()) {
+        answers[index] = newAnswer;
+    }
+    else {
+        throw std::out_of_range("Invalid answer index");
+    }
+}
+
+QString Question::getContents() const noexcept{
     return contents;
 }
 
-QStringList Question::getAnswers() const {
+QStringList Question::getAnswers() const noexcept{
     return answers;
 }
 
-uint Question::getIndexOfCorrectAnswer() const {
+uint Question::getIndexOfCorrectAnswer() const noexcept{
     return indexOfCorrectAnswer;
 }
 
-bool Question::isAnswerCorrect(uint indexOfAnswer) {
+bool Question::isAnswerCorrect(const uint indexOfAnswer) const noexcept{
     return indexOfCorrectAnswer == indexOfAnswer;
+}
+
+bool Question::operator==(const Question& other) const noexcept{
+    return (contents == other.contents) &&
+           (answers == other.answers)   &&
+           (indexOfCorrectAnswer == other.indexOfCorrectAnswer);
+}
+
+bool Question::operator!=(const Question& other) const noexcept{
+    return (contents != other.contents) &&
+           (answers != other.answers)   &&
+           (indexOfCorrectAnswer != other.indexOfCorrectAnswer);
 }

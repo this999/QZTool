@@ -24,15 +24,19 @@ public:
     Question() = default;
     Question(QString contents, QStringList answers, uint indexOfCorrectAnswer);
 
-    void setContents(const QString &contents);
+    bool operator==(const Question& other) const noexcept;
+    bool operator!=(const Question& other) const noexcept;
+
+    void setContents(const QString &contents) noexcept;
     void setAnswers(const QStringList &answers);
-    void setIndexOfCorrectAnswer(const uint indexOfCorrectAnswer);
+    void setIndexOfCorrectAnswer(const uint indexOfCorrectAnswer) noexcept;
+    void changeAnswer(const size_t index, const QString &newAnswer);
 
-    QString getContents() const;
-    QStringList getAnswers() const;
-    uint getIndexOfCorrectAnswer() const;
+    QString getContents() const noexcept;
+    QStringList getAnswers() const noexcept;
+    uint getIndexOfCorrectAnswer() const noexcept;
 
-    bool isAnswerCorrect(uint indexOfAnswer);
+    bool isAnswerCorrect(const uint indexOfAnswer) const noexcept;
 
 private:
     QString contents{""};

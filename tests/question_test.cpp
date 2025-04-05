@@ -6,7 +6,7 @@ protected:
     Question question;
     const QString contest{"What is 2 + 2?"};
     const QStringList answers{"2", "3", "4", "5"};
-    const uint indexOfCorrectAnswer{1};
+    const uint indexOfCorrectAnswer{2};
     QStringList emptyList;
 
     void SetUp() override {
@@ -21,7 +21,7 @@ TEST_F(QuestionTest, questionGetterSetterTest) {
 
     question.setContents("What is 2 + 4?");
     question.setAnswers(QStringList{"4", "5", "6", "7"});
-    question.setIndexOfCorrectAnswer(2);
+    question.setIndexOfCorrectAnswer(1);
 
     EXPECT_NE(question.getAnswers(), answers);
     EXPECT_NE(question.getContents(), contest);
@@ -42,6 +42,19 @@ TEST_F(QuestionTest, isAnswerCorrectTest) {
     EXPECT_FALSE(question.isAnswerCorrect(incorrectIndex));
 }
 
+TEST_F(QuestionTest, changeAnswerTest) {
+    const QStringList newAnswerList{"2", "3", "4", "6"};
+    size_t indexOfAnswer{3};
+    question.changeAnswer(indexOfAnswer, "6");
+
+    EXPECT_EQ(question.getAnswers(), newAnswerList);
+
+    indexOfAnswer = 5;
+
+    EXPECT_THROW(question.changeAnswer(indexOfAnswer, "7"), std::out_of_range);
+}
+
+//Dodac testy operatorów == !=
 
 
 
