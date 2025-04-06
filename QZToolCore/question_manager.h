@@ -22,19 +22,19 @@ class QuestionManager{
 public:
     QuestionManager() = default;
     QuestionManager(QMap<uint, Question> questions);
-    bool operator==(const QuestionManager& other) const;
-    bool operator!=(const QuestionManager& other) const;
+    bool operator==(const QuestionManager& other) const noexcept;
+    bool operator!=(const QuestionManager& other) const noexcept;
 
-    void addQuestion(const Question &question);
-    void addQuestion(const QString& questionContents, const QStringList& questionAnswers, const uint questionIndexOfCorrectAnswer);
-    void removeQuestion(const uint index);
-    void changeOneAnswer(const uint indexOfQuestion ,const size_t indexOfAnswer, const QString &newAnswer);
-    void changeAllAnswers(const uint indexOfQuestion, const QStringList &newAnswers);
-    void changeIndexOfCorrectAnswer(const uint indexOfQuestion, const uint newIndexOfCorrectAnswer);
-    void changeContents(const uint indexOfQuestion, const QString newContents);
-    void clearQuestions();
+    bool addQuestion(const Question &question);
+    bool addQuestion(const QString& questionContents, const QStringList& questionAnswers, const uint questionIndexOfCorrectAnswer);
+    bool removeQuestion(const uint index) noexcept;
+    bool changeOneAnswer(const uint indexOfQuestion ,const size_t indexOfAnswer, const QString &newAnswer);
+    bool changeAllAnswers(const uint indexOfQuestion, const QStringList &newAnswers);
+    bool changeIndexOfCorrectAnswer(const uint indexOfQuestion, const uint newIndexOfCorrectAnswer);
+    bool changeContents(const uint indexOfQuestion, const QString newContents);
+    void clearQuestions() noexcept;
 
-    QMap<uint, Question> getAllQuestions() const;
+    QMap<uint, Question> getAllQuestions() const noexcept;
     Question getQuestion(const uint indexOfQuestion) const;
 
 private:

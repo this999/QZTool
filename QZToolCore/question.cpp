@@ -12,24 +12,31 @@ Question::Question(QString contents, QStringList answers, uint indexOfCorrectAns
     }
 }
 
-void Question::setContents(const QString &contents) noexcept {
+bool Question::setContents(const QString &contents) {
+    if (contents.isEmpty()) {
+        throw std::invalid_argument("Question must have at least one answer.");
+    }
     this->contents = contents;
+    return true;
 }
 
-void Question::setAnswers(const QStringList &answers) {
+bool Question::setAnswers(const QStringList &answers) {
     if (answers.isEmpty()) {
         throw std::invalid_argument("Question must have at least one answer.");
     }
     this->answers = answers;
+    return true;
 }
 
-void Question::setIndexOfCorrectAnswer(const uint indexOfCorrectAnswer) noexcept {
+bool Question::setIndexOfCorrectAnswer(const uint indexOfCorrectAnswer) noexcept {
     this->indexOfCorrectAnswer = indexOfCorrectAnswer;
+    return true;
 }
 
-void Question::changeAnswer(const size_t index, const QString &newAnswer) {
+bool Question::changeAnswer(const size_t index, const QString &newAnswer) {
     if (index < answers.size()) {
         answers[index] = newAnswer;
+        return true;
     }
     else {
         throw std::out_of_range("Invalid answer index");

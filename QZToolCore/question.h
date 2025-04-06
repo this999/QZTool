@@ -27,10 +27,10 @@ public:
     bool operator==(const Question& other) const noexcept;
     bool operator!=(const Question& other) const noexcept;
 
-    void setContents(const QString &contents) noexcept;
-    void setAnswers(const QStringList &answers);
-    void setIndexOfCorrectAnswer(const uint indexOfCorrectAnswer) noexcept;
-    void changeAnswer(const size_t index, const QString &newAnswer);
+    bool setContents(const QString &contents);
+    bool setAnswers(const QStringList &answers);
+    bool setIndexOfCorrectAnswer(const uint indexOfCorrectAnswer) noexcept;
+    bool changeAnswer(const size_t index, const QString &newAnswer);
 
     QString getContents() const noexcept;
     QStringList getAnswers() const noexcept;
