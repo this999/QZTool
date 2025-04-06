@@ -12,31 +12,27 @@ Question::Question(QString contents, QStringList answers, uint indexOfCorrectAns
     }
 }
 
-bool Question::setContents(const QString &contents) {
+void Question::setContents(const QString &contents) {
     if (contents.isEmpty()) {
         throw std::invalid_argument("Question must have at least one answer.");
     }
     this->contents = contents;
-    return true;
 }
 
-bool Question::setAnswers(const QStringList &answers) {
+void Question::setAnswers(const QStringList &answers) {
     if (answers.isEmpty()) {
         throw std::invalid_argument("Question must have at least one answer.");
     }
     this->answers = answers;
-    return true;
 }
 
-bool Question::setIndexOfCorrectAnswer(const uint indexOfCorrectAnswer) noexcept {
+void Question::setIndexOfCorrectAnswer(const uint indexOfCorrectAnswer) noexcept {
     this->indexOfCorrectAnswer = indexOfCorrectAnswer;
-    return true;
 }
 
-bool Question::changeAnswer(const size_t index, const QString &newAnswer) {
+void Question::changeAnswer(const size_t index, const QString &newAnswer) {
     if (index < answers.size()) {
         answers[index] = newAnswer;
-        return true;
     }
     else {
         throw std::out_of_range("Invalid answer index");
@@ -60,13 +56,10 @@ bool Question::isAnswerCorrect(const uint indexOfAnswer) const noexcept{
 }
 
 bool Question::operator==(const Question& other) const noexcept{
-    return (contents == other.contents) &&
-           (answers == other.answers)   &&
-           (indexOfCorrectAnswer == other.indexOfCorrectAnswer);
+    return std::tie(contents, answers, indexOfCorrectAnswer) ==
+           std::tie(other.contents, other.answers, other.indexOfCorrectAnswer);
 }
 
 bool Question::operator!=(const Question& other) const noexcept{
-    return (contents != other.contents) &&
-           (answers != other.answers)   &&
-           (indexOfCorrectAnswer != other.indexOfCorrectAnswer);
+    return !(*this == other);
 }

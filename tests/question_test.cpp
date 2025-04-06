@@ -19,9 +19,9 @@ TEST_F(QuestionTest, questionGetterSetterTest) {
     EXPECT_EQ(question.getContents(), contest);
     EXPECT_EQ(question.getIndexOfCorrectAnswer(), indexOfCorrectAnswer);
 
-    EXPECT_TRUE(question.setContents("What is 2 + 4?"));
-    EXPECT_TRUE(question.setAnswers(QStringList{"4", "5", "6", "7"}));
-    EXPECT_TRUE(question.setIndexOfCorrectAnswer(1));
+    question.setContents("What is 2 + 4?");
+    question.setAnswers(QStringList{"4", "5", "6", "7"});
+    question.setIndexOfCorrectAnswer(1);
 
     EXPECT_NE(question.getAnswers(), answers);
     EXPECT_NE(question.getContents(), contest);
@@ -48,7 +48,7 @@ TEST_F(QuestionTest, isAnswerCorrectTest) {
 TEST_F(QuestionTest, changeAnswerTest) {
     const QStringList newAnswerList{"2", "3", "4", "6"};
     const size_t indexOfAnswer{3};
-    EXPECT_TRUE(question.changeAnswer(indexOfAnswer, "6"));
+    question.changeAnswer(indexOfAnswer, "6");
     EXPECT_EQ(question.getAnswers(), newAnswerList);
 }
 

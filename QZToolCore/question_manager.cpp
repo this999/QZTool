@@ -51,7 +51,8 @@ bool QuestionManager::changeOneAnswer(const uint indexOfQuestion ,const size_t i
     bool success{false};
     try {
         auto question{findQuestion(indexOfQuestion)};
-        success = question.value().changeAnswer(indexOfAnswer, newAnswer);
+        question.value().changeAnswer(indexOfAnswer, newAnswer);
+        success = true;
     }
     catch (const std::out_of_range& e) {
         qDebug() << "Error: " << e.what();
@@ -63,7 +64,8 @@ bool QuestionManager::changeAllAnswers(const uint indexOfQuestion, const QString
     bool success{false};
     try {
         auto question{findQuestion(indexOfQuestion)};
-        success = question.value().setAnswers(newAnswers);
+        question.value().setAnswers(newAnswers);
+        success = true;
     }
     catch (const std::out_of_range& e) {
         qDebug() << "Error: " << e.what();
@@ -79,7 +81,8 @@ bool QuestionManager::changeIndexOfCorrectAnswer(const uint indexOfQuestion, con
     bool success{false};
     try {
         auto question{findQuestion(indexOfQuestion)};
-        success = question.value().setIndexOfCorrectAnswer(newIndexOfCorrectAnswer);
+        question.value().setIndexOfCorrectAnswer(newIndexOfCorrectAnswer);
+        success = true;
     }
     catch (const std::out_of_range& e) {
         qDebug() << "Error: " << e.what();
@@ -91,7 +94,8 @@ bool QuestionManager::changeContents(const uint indexOfQuestion, const QString n
     bool success{false};
     try {
         auto question{findQuestion(indexOfQuestion)};
-        success = question.value().setContents(newContents);
+        question.value().setContents(newContents);
+        success = true;
     }
     catch (const std::out_of_range& e) {
         qDebug() << "Error: " << e.what();
