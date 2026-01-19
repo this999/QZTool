@@ -1,4 +1,6 @@
 #include "question.h"
+#include <stdexcept>
+#include <tuple>
 
 
 Question::Question(QString contents, QStringList answers, uint indexOfCorrectAnswer) : contents(contents), answers(answers), indexOfCorrectAnswer(indexOfCorrectAnswer) {
@@ -14,7 +16,7 @@ Question::Question(QString contents, QStringList answers, uint indexOfCorrectAns
 
 void Question::setContents(const QString &contents) {
     if (contents.isEmpty()) {
-        throw std::invalid_argument("Question must have at least one answer.");
+        throw std::invalid_argument("Question contents cannot be empty.");
     }
     this->contents = contents;
 }
@@ -26,7 +28,13 @@ void Question::setAnswers(const QStringList &answers) {
     this->answers = answers;
 }
 
-void Question::setIndexOfCorrectAnswer(const uint indexOfCorrectAnswer) noexcept {
+void Question::setIndexOfCorrectAnswer(const uint indexOfCorrectAnswer) {
+    if (answers.isEmpty()) {
+        throw std::logic_error("Cannot set correct answer index when there are no answers.");
+    }
+    if (indexOfCorrectAnswer >= static_cast<uint>(answers.size())) {
+        throw std::out_of_range("Correct answer index is invalid.");
+    }
     this->indexOfCorrectAnswer = indexOfCorrectAnswer;
 }
 
@@ -37,6 +45,7 @@ void Question::changeAnswer(const size_t index, const QString &newAnswer) {
     else {
         throw std::out_of_range("Invalid answer index");
     }
+    // rozwazyc uint zamiast size_t
 }
 
 QString Question::getContents() const noexcept{
