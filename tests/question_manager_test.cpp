@@ -2,6 +2,12 @@
 
 #include "QZToolCore/question_manager.h"
 
+static QVector<QString> *capturedMessages = nullptr;
+
+static void testMessageHandler(QtMsgType, const QMessageLogContext&, const QString &msg) {
+    if (capturedMessages) capturedMessages->append(msg);
+}
+
 class QuestionManagerTest : public ::testing::Test {
 protected:
     const QString contest{"What is 2 + 2?"};
@@ -16,16 +22,128 @@ protected:
     const QMap<uint, Question> questions{{firstIndex, firstQuestion}, {secondIndex, secondQuestion}};
     const QuestionManager questionManager = QuestionManager(questions);
     QuestionManager secondQuestionManager;
+    QVector<QString> messages;
 
     void SetUp() override {
         secondQuestionManager = QuestionManager(questions);
+        messages.clear();
+        capturedMessages = &messages;
+        qInstallMessageHandler(testMessageHandler);
+    }
+
+    void TearDown() override {
+        qInstallMessageHandler(nullptr);
+        capturedMessages = nullptr;
     }
 };
 
+TEST_F(QuestionManagerTest, changeContentsLogsOnInvalid) {
+    const QString emptyContent;
+    secondQuestionManager.changeContents(0, emptyContent);
+
+
+    EXPECT_FALSE(messages.isEmpty());
+    bool found = false;
+    for (const auto &msg : messages) {
+        if (msg.contains("Question contents cannot be empty") || msg.contains("Error:")) {
+            found = true;
+            break;
+        }
+    }
+    EXPECT_TRUE(found);
+}
+
+// TEST_F(QuestionManagerTest, addQuestionLogsOnInvalid) {
+//     Question emptyQuestion;
+//     EXPECT_NO_THROW(secondQuestionManager.addQuestion(emptyQuestion));
+
+
+//     EXPECT_FALSE(messages.isEmpty());
+//     bool found = false;
+//     for (const auto &msg : messages) {
+//         if (msg.contains("Questions must") || msg.contains("cannot") || msg.contains("Error:")) {
+//             found = true;
+//             break;
+//         }
+//     }
+//     EXPECT_TRUE(found);
+// }
+
+TEST_F(QuestionManagerTest, changeOneAnswerLogsOnInvalid) {
+    secondQuestionManager.clearQuestions();
+    secondQuestionManager.addQuestion(firstQuestion);
+
+    secondQuestionManager.changeOneAnswer(7, 0, "x");
+    secondQuestionManager.changeOneAnswer(0, 9, "y");
+
+    EXPECT_FALSE(messages.isEmpty());
+    bool found = false;
+    for (const auto &msg : messages) {
+        if (msg.contains("out of range") || msg.contains("invalid") || msg.contains("Error:")) {
+            found = true;
+            break;
+        }
+    }
+    EXPECT_TRUE(found);
+}
+
+TEST_F(QuestionManagerTest, changeAllAnswersLogsOnInvalid) {
+    secondQuestionManager.clearQuestions();
+    secondQuestionManager.addQuestion(firstQuestion);
+
+    secondQuestionManager.changeAllAnswers(9, {"a", "b"});
+    secondQuestionManager.changeAllAnswers(0, QStringList{});
+
+    EXPECT_FALSE(messages.isEmpty());
+    bool found = false;
+    for (const auto &msg : messages) {
+        if (msg.contains("must have at least one answer") || msg.contains("invalid") || msg.contains("Error:")) {
+            found = true;
+            break;
+        }
+    }
+    EXPECT_TRUE(found);
+}
+
+TEST_F(QuestionManagerTest, changeIndexOfCorrectAnswerLogsOnInvalid) {
+    secondQuestionManager.clearQuestions();
+    secondQuestionManager.addQuestion(firstQuestion);
+
+    secondQuestionManager.changeIndexOfCorrectAnswer(0, 99);
+    secondQuestionManager.changeIndexOfCorrectAnswer(9, 0);
+
+    EXPECT_FALSE(messages.isEmpty());
+    bool found = false;
+    for (const auto &msg : messages) {
+        if (msg.contains("out of range") || msg.contains("invalid") || msg.contains("Error:")) {
+            found = true;
+            break;
+        }
+    }
+    EXPECT_TRUE(found);
+}
+
+// TEST_F(QuestionManagerTest, removeQuestionLogsOnInvalid) {
+//     secondQuestionManager.clearQuestions();
+//     secondQuestionManager.addQuestion(firstQuestion);
+
+//     EXPECT_FALSE(secondQuestionManager.removeQuestion(9));
+
+//     EXPECT_FALSE(messages.isEmpty());
+//     bool found = false;
+//     for (const auto &msg : messages) {
+//         if (msg.contains("Error:") || msg.contains("not found") || msg.contains("invalid")) {
+//             found = true;
+//             break;
+//         }
+//     }
+//     EXPECT_TRUE(found);
+// }
+
 TEST_F(QuestionManagerTest, addQuestionTest) {
     secondQuestionManager.clearQuestions();
-    EXPECT_TRUE(secondQuestionManager.addQuestion(contest, answers, indexOfCorrectAnswer));
-    EXPECT_TRUE(secondQuestionManager.addQuestion(secondQuestion));
+    secondQuestionManager.addQuestion(contest, answers, indexOfCorrectAnswer);
+    secondQuestionManager.addQuestion(secondQuestion);
 
     EXPECT_EQ(secondQuestionManager, questionManager);
 
@@ -51,7 +169,7 @@ TEST_F(QuestionManagerTest, changeAnswerTest) {
     const size_t indexOfAnswer{1};
     const QStringList newCorrectAnswers{"2", "8", "4", "5"};
 
-    EXPECT_TRUE(secondQuestionManager.changeOneAnswer(firstIndex, indexOfAnswer, "8"));
+    secondQuestionManager.changeOneAnswer(firstIndex, indexOfAnswer, "8");
     EXPECT_NE(secondQuestionManager, questionManager);
     EXPECT_EQ(secondQuestionManager.getQuestion(firstIndex).getAnswers(), newCorrectAnswers);
     EXPECT_EQ(secondQuestionManager.getQuestion(secondIndex).getAnswers(), secondAnswers);
@@ -61,7 +179,7 @@ TEST_F(QuestionManagerTest, changeAnswerTest) {
 
     secondQuestionManager = QuestionManager(questions);
 
-    EXPECT_TRUE(secondQuestionManager.changeAllAnswers(firstIndex, newCorrectAnswers));
+    secondQuestionManager.changeAllAnswers(firstIndex, newCorrectAnswers);
     EXPECT_NE(secondQuestionManager, questionManager);
     EXPECT_EQ(secondQuestionManager.getQuestion(firstIndex).getAnswers(), newCorrectAnswers);
     EXPECT_EQ(secondQuestionManager.getQuestion(secondIndex).getAnswers(), secondAnswers);
@@ -72,7 +190,7 @@ TEST_F(QuestionManagerTest, changeAnswerTest) {
 TEST_F(QuestionManagerTest, changeIndexOfCorrectAnswerTest) {
     const uint newIndexOfCorrectAnswer{3};
 
-    EXPECT_TRUE(secondQuestionManager.changeIndexOfCorrectAnswer(firstIndex, newIndexOfCorrectAnswer));
+    secondQuestionManager.changeIndexOfCorrectAnswer(firstIndex, newIndexOfCorrectAnswer);
     EXPECT_NE(secondQuestionManager, questionManager);
     EXPECT_EQ(secondQuestionManager.getAllQuestions().size(), questionManager.getAllQuestions().size());
     EXPECT_EQ(secondQuestionManager.getQuestion(firstIndex).getIndexOfCorrectAnswer(), newIndexOfCorrectAnswer);
@@ -83,7 +201,7 @@ TEST_F(QuestionManagerTest, changeContentsTest) {
     const QString newContents{"What is 2 + 1?"};
     const QString emptyContent;
 
-    EXPECT_TRUE(secondQuestionManager.changeContents(firstIndex, newContents));
+    secondQuestionManager.changeContents(firstIndex, newContents);
     EXPECT_NE(secondQuestionManager, questionManager);
     EXPECT_EQ(secondQuestionManager.getAllQuestions().size(), questionManager.getAllQuestions().size());
     EXPECT_EQ(secondQuestionManager.getQuestion(firstIndex).getContents(), newContents);

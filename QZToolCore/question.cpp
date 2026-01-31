@@ -38,14 +38,15 @@ void Question::setIndexOfCorrectAnswer(const uint indexOfCorrectAnswer) {
     this->indexOfCorrectAnswer = indexOfCorrectAnswer;
 }
 
-void Question::changeAnswer(const size_t index, const QString &newAnswer) {
-    if (index < answers.size()) {
-        answers[index] = newAnswer;
+void Question::changeAnswer(const uint index, const QString &newAnswer) {
+    if (answers.empty()) {
+        throw std::logic_error("Cannot change answer when there are no answers.");
     }
-    else {
+    const uint answersCount = static_cast<uint>(answers.size());
+    if (index >= answersCount) {
         throw std::out_of_range("Invalid answer index");
     }
-    // rozwazyc uint zamiast size_t
+    answers[static_cast<int>(index)] = newAnswer;
 }
 
 QString Question::getContents() const noexcept{

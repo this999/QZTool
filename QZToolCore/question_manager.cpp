@@ -1,5 +1,6 @@
 #include "question_manager.h"
 #include <QDebug>
+#include <stdexcept> // for std::out_of_range, std::logic_error
 
 QuestionManager::QuestionManager(QMap<uint, Question> questions) : questions(questions) {
     if (questions.isEmpty()) {
@@ -41,10 +42,10 @@ bool QuestionManager::removeQuestion(const uint index) noexcept{
     }
 }
 
-void QuestionManager::changeOneAnswer(const uint indexOfQuestion ,const size_t indexOfAnswer, const QString &newAnswer) {
+void QuestionManager::changeOneAnswer(const uint indexOfQuestion ,const uint indexOfAnswer, const QString &newAnswer) {
     try {
-        auto question{findQuestion(indexOfQuestion)};
-        question.value().changeAnswer(indexOfAnswer, newAnswer);
+        auto &question{findQuestion(indexOfQuestion)};
+        question.changeAnswer(indexOfAnswer, newAnswer);
     }
     catch (const std::out_of_range& e) {
         qDebug() << "Error: " << e.what();
@@ -53,8 +54,8 @@ void QuestionManager::changeOneAnswer(const uint indexOfQuestion ,const size_t i
 
 void QuestionManager::changeAllAnswers(const uint indexOfQuestion, const QStringList &newAnswers) {
     try {
-        auto question{findQuestion(indexOfQuestion)};
-        question.value().setAnswers(newAnswers);
+        auto &question{findQuestion(indexOfQuestion)};
+        question.setAnswers(newAnswers);
     }
     catch (const std::out_of_range& e) {
         qDebug() << "Error: " << e.what();
@@ -67,8 +68,8 @@ void QuestionManager::changeAllAnswers(const uint indexOfQuestion, const QString
 
 void QuestionManager::changeIndexOfCorrectAnswer(const uint indexOfQuestion, const uint newIndexOfCorrectAnswer) {
     try {
-        auto question{findQuestion(indexOfQuestion)};
-        question.value().setIndexOfCorrectAnswer(newIndexOfCorrectAnswer);
+        auto &question{findQuestion(indexOfQuestion)};
+        question.setIndexOfCorrectAnswer(newIndexOfCorrectAnswer);
     }
     catch (const std::out_of_range& e) {
         qDebug() << "Error: " << e.what();
@@ -80,8 +81,8 @@ void QuestionManager::changeIndexOfCorrectAnswer(const uint indexOfQuestion, con
 
 void QuestionManager::changeContents(const uint indexOfQuestion, const QString newContents) {
     try {
-        auto question{findQuestion(indexOfQuestion)};
-        question.value().setContents(newContents);
+        auto &question{findQuestion(indexOfQuestion)};
+        question.setContents(newContents);
     }
     catch (const std::out_of_range& e) {
         qDebug() << "Error: " << e.what();
@@ -104,16 +105,20 @@ Question QuestionManager::getQuestion(const uint indexOfQuestion) const {
     }
 }
 
-QMap<uint, Question>::iterator QuestionManager::findQuestion(const uint indexOfQuestion) {
-    auto it{questions.find(indexOfQuestion)};
-
-    if (it != questions.end()) {
-        return it;
-    }
-    else {
+Question& QuestionManager::findQuestion(const uint indexOfQuestion) {
+    auto it {questions.find(indexOfQuestion)};
+    if (it == questions.end()) {
         throw std::out_of_range("Question not found in the map");
     }
-    // Poprawić to niech zwraca wartość z iteratora
+    return it.value();
+}
+
+const Question& QuestionManager::findQuestion(const uint indexOfQuestion) const {
+    auto it{questions.find(indexOfQuestion)};
+    if (it == questions.end()) {
+        throw std::out_of_range("Question not found in the map");
+    }
+    return it.value();
 }
 
 bool QuestionManager::operator==(const QuestionManager& other) const noexcept{

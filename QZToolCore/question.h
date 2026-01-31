@@ -30,7 +30,7 @@ public:
     void setContents(const QString &contents);
     void setAnswers(const QStringList &answers);
     void setIndexOfCorrectAnswer(const uint indexOfCorrectAnswer);
-    void changeAnswer(const size_t index, const QString &newAnswer);
+    void changeAnswer(const uint index, const QString &newAnswer);
 
     QString getContents() const noexcept;
     QStringList getAnswers() const noexcept;
