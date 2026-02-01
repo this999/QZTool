@@ -114,60 +114,59 @@ jobs:
           path: |
             build/coverage.html
             build/coverage.xml
+  static-analysis:
+    name: Static analysis (clang-format + clang-tidy)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
 
-    static-analysis:
-      name: Static analysis (clang-format + clang-tidy)
-      runs-on: ubuntu-latest
-      steps:
-        - name: Checkout
-          uses: actions/checkout@v4
+      - name: Install clang tools
+        run: |
+          sudo apt update
+          sudo apt install -y clang-format clang-tidy
 
-        - name: Install clang tools
-          run: |
-            sudo apt update
-            sudo apt install -y clang-format clang-tidy
-
-        - name: clang-format check
-          run: |
-            # Check formatting: run clang-format in-place and fail if there are diffs
-            FILES=$(git ls-files '*.cpp' '*.h' || true)
-            if [ -n "$FILES" ]; then
-              echo "$FILES" | xargs -r clang-format -style=file -i
-              if ! git --no-pager diff --exit-code; then
-                echo "clang-format detected formatting issues. Run clang-format -i on the repository files to fix." >&2
-                git --no-pager diff --name-only
-                exit 1
-              else
-                echo "clang-format: OK"
-              fi
+      - name: clang-format check
+        run: |
+          # Check formatting: run clang-format in-place and fail if there are diffs
+          FILES=$(git ls-files '*.cpp' '*.h' || true)
+          if [ -n "$FILES" ]; then
+            echo "$FILES" | xargs -r clang-format -style=file -i
+            if ! git --no-pager diff --exit-code; then
+              echo "clang-format detected formatting issues. Run clang-format -i on the repository files to fix." >&2
+              git --no-pager diff --name-only
+              exit 1
             else
-              echo "No C/C++ sources found to check.";
+              echo "clang-format: OK"
             fi
+          else
+            echo "No C/C++ sources found to check.";
+          fi
 
-        - name: Prepare compile commands for clang-tidy
-          run: |
-            # Generate compile_commands.json for clang-tidy
-            cmake -S . -B build-clang-tidy -DCMAKE_BUILD_TYPE=Debug -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+      - name: Prepare compile commands for clang-tidy
+        run: |
+          # Generate compile_commands.json for clang-tidy
+          cmake -S . -B build-clang-tidy -DCMAKE_BUILD_TYPE=Debug -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
 
-        - name: clang-tidy check
-          run: |
-            # Run clang-tidy on project .cpp files; treat warnings/errors as failure
-            FILES=$(git ls-files 'QZToolCore/*.cpp' 'tests/*.cpp' || true)
-            if [ -n "$FILES" ]; then
-              echo "Running clang-tidy on: $FILES"
-              OUT=/tmp/clang-tidy.out
-              rm -f "$OUT"
-              for f in $FILES; do
-                echo "=== $f ===" >> "$OUT"
-                clang-tidy -p build-clang-tidy "$f" >> "$OUT" 2>&1 || true
-              done
-              if grep -En "\b(warning|error):" "$OUT" >/dev/null; then
-                echo "clang-tidy found warnings/errors:" >&2
-                sed -n '1,400p' "$OUT" >&2
-                exit 1
-              else
-                echo "clang-tidy: OK"
-              fi
+      - name: clang-tidy check
+        run: |
+          # Run clang-tidy on project .cpp files; treat warnings/errors as failure
+          FILES=$(git ls-files 'QZToolCore/*.cpp' 'tests/*.cpp' || true)
+          if [ -n "$FILES" ]; then
+            echo "Running clang-tidy on: $FILES"
+            OUT=/tmp/clang-tidy.out
+            rm -f "$OUT"
+            for f in $FILES; do
+              echo "=== $f ===" >> "$OUT"
+              clang-tidy -p build-clang-tidy "$f" >> "$OUT" 2>&1 || true
+            done
+            if grep -En "\b(warning|error):" "$OUT" >/dev/null; then
+              echo "clang-tidy found warnings/errors:" >&2
+              sed -n '1,400p' "$OUT" >&2
+              exit 1
             else
-              echo "No target files for clang-tidy found.";
+              echo "clang-tidy: OK"
             fi
+          else
+            echo "No target files for clang-tidy found.";
+          fi
