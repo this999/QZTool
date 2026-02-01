@@ -2,15 +2,52 @@ name: CI
 
 on:
   push:
-    branches: [ main, master ]
+    branches: [ main, master, ci-experiments ]
   pull_request:
+  workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      COVERAGE_THRESHOLD: '70' # percent, set to 0 to disable
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Setup ccache
+        run: |
+          sudo apt update
+          sudo apt install -y ccache
+          # create cache dir so actions/cache can save it
+          mkdir -p "$HOME/.ccache"
+          # ensure ccache size is configured
+          ccache -M 1G || true
+          echo "CCACHE_DIR=$HOME/.ccache" >> $GITHUB_ENV
+          echo "CCACHE_MAXSIZE=1G" >> $GITHUB_ENV
+
+      - name: Cache ccache
+        uses: actions/cache@v4
+        with:
+          path: |
+            ${{ env.CCACHE_DIR }}
+          key: ${{ runner.os }}-ccache-${{ hashFiles('**/*.cpp','**/*.h') }}
+          restore-keys: |
+            ${{ runner.os }}-ccache-
+
+      - name: Ensure FetchContent cache dir exists
+        run: |
+          mkdir -p build/_deps
+          # create a harmless placeholder so cache action can save the directory
+          touch build/_deps/.placeholder
+
+      - name: Cache CMake deps (FetchContent)
+        uses: actions/cache@v4
+        with:
+          path: build/_deps
+          key: ${{ runner.os }}-cmake-deps-${{ hashFiles('**/CMakeLists.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-cmake-deps-
 
       - name: Install dependencies
         run: |
@@ -33,7 +70,9 @@ jobs:
           fi
 
       - name: Configure (with coverage)
-        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug -DENABLE_COVERAGE=ON
+        run: |
+          export CMAKE_CXX_COMPILER_LAUNCHER=ccache
+          cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug -DENABLE_COVERAGE=ON
 
       - name: Build
         run: cmake --build build -j$(nproc)
@@ -53,10 +92,81 @@ jobs:
       - name: Generate coverage (gcovr)
         run: |
           cd build
-          gcovr -r .. --xml-pretty -o coverage.xml || true
+          # generate XML and HTML reports
+          gcovr -r .. --xml-pretty -o coverage.xml
+          gcovr -r .. --html --html-details -o coverage.html
 
-      - name: Upload coverage
+      - name: Coverage threshold check
+        run: |
+          cd build
+          if [ "${COVERAGE_THRESHOLD}" != "0" ]; then
+            echo "Checking coverage threshold: ${COVERAGE_THRESHOLD}%"
+            # gcovr exit code will be non-zero if below threshold
+            gcovr --fail-under-line=${COVERAGE_THRESHOLD} -r ..
+          else
+            echo "Coverage threshold disabled (0)"
+          fi
+
+      - name: Upload coverage artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: coverage
-          path: build/coverage.xml
+          name: coverage-html
+          path: |
+            build/coverage.html
+            build/coverage.xml
+  static-analysis:
+    name: Static analysis (clang-format + clang-tidy)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install clang tools
+        run: |
+          sudo apt update
+          sudo apt install -y clang-format clang-tidy qt6-base-dev
+
+      - name: clang-format check
+        run: |
+          # Check formatting: run clang-format in-place and fail if there are diffs
+          FILES=$(git ls-files '*.cpp' '*.h' || true)
+          if [ -n "$FILES" ]; then
+            echo "$FILES" | xargs -r clang-format -style=file -i
+            if ! git --no-pager diff --exit-code; then
+              echo "clang-format detected formatting issues. Run clang-format -i on the repository files to fix." >&2
+              git --no-pager diff --name-only
+              exit 1
+            else
+              echo "clang-format: OK"
+            fi
+          else
+            echo "No C/C++ sources found to check.";
+          fi
+
+      - name: Prepare compile commands for clang-tidy
+        run: |
+          # Generate compile_commands.json for clang-tidy
+          cmake -S . -B build-clang-tidy -DCMAKE_BUILD_TYPE=Debug -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+
+      - name: clang-tidy check
+        run: |
+          # Run clang-tidy on project .cpp files; treat warnings/errors as failure
+          FILES=$(git ls-files 'QZToolCore/*.cpp' 'tests/*.cpp' || true)
+          if [ -n "$FILES" ]; then
+            echo "Running clang-tidy on: $FILES"
+            OUT=/tmp/clang-tidy.out
+            rm -f "$OUT"
+            for f in $FILES; do
+              echo "=== $f ===" >> "$OUT"
+              clang-tidy -p build-clang-tidy "$f" >> "$OUT" 2>&1 || true
+            done
+            if grep -En "\b(warning|error):" "$OUT" >/dev/null; then
+              echo "clang-tidy found warnings/errors:" >&2
+              sed -n '1,400p' "$OUT" >&2
+              exit 1
+            else
+              echo "clang-tidy: OK"
+            fi
+          else
+            echo "No target files for clang-tidy found.";
+          fi

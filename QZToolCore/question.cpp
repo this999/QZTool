@@ -2,74 +2,73 @@
 #include <stdexcept>
 #include <tuple>
 
+Question::Question(QString contents, QStringList answers,
+                   uint indexOfCorrectAnswer)
+    : contents(contents), answers(answers),
+      indexOfCorrectAnswer(indexOfCorrectAnswer) {
 
-Question::Question(QString contents, QStringList answers, uint indexOfCorrectAnswer) : contents(contents), answers(answers), indexOfCorrectAnswer(indexOfCorrectAnswer) {
+  if (answers.isEmpty()) {
+    throw std::invalid_argument("Question must have at least one answer.");
+  }
 
-    if (answers.isEmpty()) {
-        throw std::invalid_argument("Question must have at least one answer.");
-    }
-
-    if (indexOfCorrectAnswer >= answers.size()) {
-        throw std::out_of_range("Correct answer index is invalid.");
-    }
+  if (indexOfCorrectAnswer >= answers.size()) {
+    throw std::out_of_range("Correct answer index is invalid.");
+  }
 }
 
 void Question::setContents(const QString &contents) {
-    if (contents.isEmpty()) {
-        throw std::invalid_argument("Question contents cannot be empty.");
-    }
-    this->contents = contents;
+  if (contents.isEmpty()) {
+    throw std::invalid_argument("Question contents cannot be empty.");
+  }
+  this->contents = contents;
 }
 
 void Question::setAnswers(const QStringList &answers) {
-    if (answers.isEmpty()) {
-        throw std::invalid_argument("Question must have at least one answer.");
-    }
-    this->answers = answers;
+  if (answers.isEmpty()) {
+    throw std::invalid_argument("Question must have at least one answer.");
+  }
+  this->answers = answers;
 }
 
 void Question::setIndexOfCorrectAnswer(const uint indexOfCorrectAnswer) {
-    if (answers.isEmpty()) {
-        throw std::logic_error("Cannot set correct answer index when there are no answers.");
-    }
-    if (indexOfCorrectAnswer >= static_cast<uint>(answers.size())) {
-        throw std::out_of_range("Correct answer index is invalid.");
-    }
-    this->indexOfCorrectAnswer = indexOfCorrectAnswer;
+  if (answers.isEmpty()) {
+    throw std::logic_error(
+        "Cannot set correct answer index when there are no answers.");
+  }
+  if (indexOfCorrectAnswer >= static_cast<uint>(answers.size())) {
+    throw std::out_of_range("Correct answer index is invalid.");
+  }
+  this->indexOfCorrectAnswer = indexOfCorrectAnswer;
 }
 
 void Question::changeAnswer(const uint index, const QString &newAnswer) {
-    if (answers.empty()) {
-        throw std::logic_error("Cannot change answer when there are no answers.");
-    }
-    const uint answersCount = static_cast<uint>(answers.size());
-    if (index >= answersCount) {
-        throw std::out_of_range("Invalid answer index");
-    }
-    answers[static_cast<int>(index)] = newAnswer;
+  if (answers.empty()) {
+    throw std::logic_error("Cannot change answer when there are no answers.");
+  }
+  const uint answersCount = static_cast<uint>(answers.size());
+  if (index >= answersCount) {
+    throw std::out_of_range("Invalid answer index");
+  }
+  answers[static_cast<int>(index)] = newAnswer;
 }
 
-QString Question::getContents() const noexcept{
-    return contents;
+QString Question::getContents() const noexcept { return contents; }
+
+QStringList Question::getAnswers() const noexcept { return answers; }
+
+uint Question::getIndexOfCorrectAnswer() const noexcept {
+  return indexOfCorrectAnswer;
 }
 
-QStringList Question::getAnswers() const noexcept{
-    return answers;
+bool Question::isAnswerCorrect(const uint indexOfAnswer) const noexcept {
+  return indexOfCorrectAnswer == indexOfAnswer;
 }
 
-uint Question::getIndexOfCorrectAnswer() const noexcept{
-    return indexOfCorrectAnswer;
+bool Question::operator==(const Question &other) const noexcept {
+  return std::tie(contents, answers, indexOfCorrectAnswer) ==
+         std::tie(other.contents, other.answers, other.indexOfCorrectAnswer);
 }
 
-bool Question::isAnswerCorrect(const uint indexOfAnswer) const noexcept{
-    return indexOfCorrectAnswer == indexOfAnswer;
-}
-
-bool Question::operator==(const Question& other) const noexcept{
-    return std::tie(contents, answers, indexOfCorrectAnswer) ==
-           std::tie(other.contents, other.answers, other.indexOfCorrectAnswer);
-}
-
-bool Question::operator!=(const Question& other) const noexcept{
-    return !(*this == other);
+bool Question::operator!=(const Question &other) const noexcept {
+  return !(*this == other);
 }
