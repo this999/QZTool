@@ -16,7 +16,21 @@ jobs:
         run: |
           sudo apt update
           sudo apt install -y build-essential cmake pkg-config \
-            qt6-base-dev lcov gcovr
+            qt6-base-dev lcov gcovr libgtest-dev
+          # libgtest-dev on Debian/Ubuntu provides sources only; build and install
+          if [ -d /usr/src/googletest ]; then
+            GTEST_SRC=/usr/src/googletest
+          else
+            GTEST_SRC=/usr/src/gtest
+          fi
+          if [ -d "$GTEST_SRC" ]; then
+            cd "$GTEST_SRC"
+            sudo cmake .
+            sudo make
+            # copy static libs to system library path so linker can find them
+            sudo cp lib/*.a /usr/lib || sudo cp *.a /usr/lib || true
+            cd -
+          fi
 
       - name: Configure (with coverage)
         run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug -DENABLE_COVERAGE=ON
