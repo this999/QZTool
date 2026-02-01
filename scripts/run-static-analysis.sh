@@ -14,13 +14,27 @@ FILES=$(git ls-files '*.cpp' '*.h' || true)
 if [ -n "$FILES" ]; then
   # run clang-format in a temp copy to detect changes
   TMP_DIR=$(mktemp -d)
-  cp -a $FILES "$TMP_DIR/" || true
+  # copy files preserving directory structure
+  for f in $FILES; do
+    mkdir -p "$TMP_DIR/$(dirname "$f")"
+    cp -a "$f" "$TMP_DIR/$f" || true
+  done
   pushd "$TMP_DIR" >/dev/null
-  echo "$FILES" | xargs -r clang-format -style=file -i
-  if ! git --no-pager diff --exit-code >/dev/null 2>&1; then
+  echo "$FILES" | xargs -r -n1 -P4 clang-format -style=file -i
+
+  # compare formatted copies with originals (avoid calling git in tmp dir)
+  FOUND=0
+  for f in $FILES; do
+    if ! cmp -s "$REPO_ROOT/$f" "$TMP_DIR/$f"; then
+      FOUND=1
+      break
+    fi
+  done
+
+  if [ "$FOUND" -eq 1 ]; then
     echo "clang-format found formatting issues. Run the following in repo root to fix:"
     echo
-    echo "  clang-format -style=file -i \\$(git ls-files '*.cpp' '*.h')"
+    echo "  clang-format -style=file -i \$(git ls-files '*.cpp' '*.h')"
     popd >/dev/null
     rm -rf "$TMP_DIR"
     exit 1
