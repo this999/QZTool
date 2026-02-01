@@ -124,7 +124,7 @@ jobs:
       - name: Install clang tools
         run: |
           sudo apt update
-          sudo apt install -y clang-format clang-tidy
+          sudo apt install -y clang-format clang-tidy qt6-base-dev
 
       - name: clang-format check
         run: |
