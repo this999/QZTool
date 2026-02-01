@@ -33,6 +33,12 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-ccache-
 
+      - name: Ensure FetchContent cache dir exists
+        run: |
+          mkdir -p build/_deps
+          # create a harmless placeholder so cache action can save the directory
+          touch build/_deps/.placeholder
+
       - name: Cache CMake deps (FetchContent)
         uses: actions/cache@v4
         with:
