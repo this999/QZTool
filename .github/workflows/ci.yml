@@ -9,6 +9,8 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      COVERAGE_THRESHOLD: '70' # percent, set to 0 to disable
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -90,10 +92,25 @@ jobs:
       - name: Generate coverage (gcovr)
         run: |
           cd build
-          gcovr -r .. --xml-pretty -o coverage.xml || true
+          # generate XML and HTML reports
+          gcovr -r .. --xml-pretty -o coverage.xml
+          gcovr -r .. --html --html-details -o coverage.html
 
-      - name: Upload coverage
+      - name: Coverage threshold check
+        run: |
+          cd build
+          if [ "${COVERAGE_THRESHOLD}" != "0" ]; then
+            echo "Checking coverage threshold: ${COVERAGE_THRESHOLD}%"
+            # gcovr exit code will be non-zero if below threshold
+            gcovr --fail-under-line=${COVERAGE_THRESHOLD} -r ..
+          else
+            echo "Coverage threshold disabled (0)"
+          fi
+
+      - name: Upload coverage artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: coverage
-          path: build/coverage.xml
+          name: coverage-html
+          path: |
+            build/coverage.html
+            build/coverage.xml
