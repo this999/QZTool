@@ -1,6 +1,5 @@
 #include "question_manager.h"
-#include <QDebug>
-#include <stdexcept> // for std::out_of_range, std::logic_error
+#include <stdexcept>
 
 QuestionManager::QuestionManager(QMap<uint, Question> questions) : questions(questions) {
     if (questions.isEmpty()) {
@@ -21,78 +20,56 @@ void QuestionManager::addQuestion(const Question &question) {
 }
 
 void QuestionManager::addQuestion(const QString& questionContents, const QStringList& questionAnswers, const uint questionIndexOfCorrectAnswer) {
-    try {
-        questions.insert(questions.isEmpty() ? 0 : questions.lastKey() + 1, Question(questionContents, questionAnswers, questionIndexOfCorrectAnswer));
+    if (questionContents.isEmpty()) {
+        throw std::invalid_argument("Questions must have contents.");
     }
-    catch (const std::out_of_range& e) {
-        qDebug() << "Error: " << e.what();
+    else if (questionAnswers.isEmpty()) {
+        throw std::invalid_argument("Questions must have at least one answer.");
     }
-    catch (const std::invalid_argument& e) {
-        qDebug() << "Error: " << e.what();
+    else if (questionIndexOfCorrectAnswer >= static_cast<uint>(questionAnswers.size())) {
+        throw std::out_of_range("Index of correct answer is out of range");
+    }
+    else {
+        questions.insert(questions.isEmpty() ? 0 : questions.lastKey() + 1,
+                         Question(questionContents, questionAnswers, questionIndexOfCorrectAnswer));
     }
 }
 
-bool QuestionManager::removeQuestion(const uint index) noexcept{
+void QuestionManager::removeQuestion(const uint index){
     if (questions.contains(index)) {
         questions.remove(index);
-        return true;
     }
     else {
-        return false;
+        throw std::out_of_range("Question not found");
     }
 }
 
 void QuestionManager::changeOneAnswer(const uint indexOfQuestion ,const uint indexOfAnswer, const QString &newAnswer) {
-    try {
-        auto &question{findQuestion(indexOfQuestion)};
-        question.changeAnswer(indexOfAnswer, newAnswer);
-    }
-    catch (const std::out_of_range& e) {
-        qDebug() << "Error: " << e.what();
-    }
+    auto &question{findQuestion(indexOfQuestion)};
+    question.changeAnswer(indexOfAnswer, newAnswer);
 }
 
 void QuestionManager::changeAllAnswers(const uint indexOfQuestion, const QStringList &newAnswers) {
-    try {
-        auto &question{findQuestion(indexOfQuestion)};
-        question.setAnswers(newAnswers);
-    }
-    catch (const std::out_of_range& e) {
-        qDebug() << "Error: " << e.what();
-    }
+    auto &question{findQuestion(indexOfQuestion)};
+    question.setAnswers(newAnswers);
 
-    catch (const std::invalid_argument& e) {
-        qDebug() << "Error: " << e.what();
-    }
 }
 
 void QuestionManager::changeIndexOfCorrectAnswer(const uint indexOfQuestion, const uint newIndexOfCorrectAnswer) {
-    try {
-        auto &question{findQuestion(indexOfQuestion)};
-        question.setIndexOfCorrectAnswer(newIndexOfCorrectAnswer);
-    }
-    catch (const std::out_of_range& e) {
-        qDebug() << "Error: " << e.what();
-    }
-    catch (const std::logic_error& e) {
-        qDebug() << "Error: " << e.what();
-    }
+    auto &question{findQuestion(indexOfQuestion)};
+    question.setIndexOfCorrectAnswer(newIndexOfCorrectAnswer);
 }
 
 void QuestionManager::changeContents(const uint indexOfQuestion, const QString newContents) {
-    try {
-        auto &question{findQuestion(indexOfQuestion)};
-        question.setContents(newContents);
-    }
-    catch (const std::out_of_range& e) {
-        qDebug() << "Error: " << e.what();
-    }
-    catch (const std::invalid_argument& e) {
-        qDebug() <<"Error: " << e.what();
-    }
+    auto &question{findQuestion(indexOfQuestion)};
+    question.setContents(newContents);
 }
 
-QMap<uint, Question> QuestionManager::getAllQuestions() const noexcept{
+const QMap<uint, Question>& QuestionManager::getAllQuestions() const noexcept{
+    return questions;
+}
+
+QMap<uint, Question> QuestionManager::copyOfAllQuestions() const{
     return questions;
 }
 
@@ -101,14 +78,14 @@ Question QuestionManager::getQuestion(const uint indexOfQuestion) const {
         return questions[indexOfQuestion];
     }
     else {
-        throw std::out_of_range("Question not found in the map");
+        throw std::out_of_range("Question not found");
     }
 }
 
 Question& QuestionManager::findQuestion(const uint indexOfQuestion) {
     auto it {questions.find(indexOfQuestion)};
     if (it == questions.end()) {
-        throw std::out_of_range("Question not found in the map");
+        throw std::out_of_range("Question not found");
     }
     return it.value();
 }
@@ -116,7 +93,7 @@ Question& QuestionManager::findQuestion(const uint indexOfQuestion) {
 const Question& QuestionManager::findQuestion(const uint indexOfQuestion) const {
     auto it{questions.find(indexOfQuestion)};
     if (it == questions.end()) {
-        throw std::out_of_range("Question not found in the map");
+        throw std::out_of_range("Question not found");
     }
     return it.value();
 }

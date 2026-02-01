@@ -37,6 +37,10 @@ TEST_F(QuestionTest, functionShouldThrowExceptionTest) {
     EXPECT_THROW(Question q(contest, answers, outOfRangeIndex), std::out_of_range);
     EXPECT_THROW(question.setContents(newContents), std::invalid_argument);
     EXPECT_THROW(question.changeAnswer(outOfRangeIndex, "7"), std::out_of_range);
+    EXPECT_THROW(question.setIndexOfCorrectAnswer(outOfRangeIndex), std::out_of_range);
+    Question emptyQuestion;
+    EXPECT_THROW(emptyQuestion.setIndexOfCorrectAnswer(0), std::logic_error);
+    EXPECT_THROW(emptyQuestion.changeAnswer(0, "7"), std::logic_error);
 }
 
 TEST_F(QuestionTest, isAnswerCorrectTest) {

@@ -9,6 +9,17 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+# Optional coverage build flags and helper targets
+option(ENABLE_COVERAGE "Enable coverage reporting" OFF)
+
+if(ENABLE_COVERAGE)
+    message(STATUS "Building with coverage flags")
+    if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+        add_compile_options(--coverage -O0 -g)
+        add_link_options(--coverage)
+    endif()
+endif()
+
 find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Core Widgets)
 find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Core Widgets)
 
@@ -50,4 +61,25 @@ install(TARGETS QZTool
     BUNDLE DESTINATION .
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+)
+
+# Helper targets for coverage generation/cleanup
+add_custom_target(coverage-report
+    COMMAND ${CMAKE_COMMAND} -E echo "Generating coverage report..."
+    COMMAND ${CMAKE_COMMAND} -E chdir ${CMAKE_BINARY_DIR} gcovr -r ${CMAKE_SOURCE_DIR} --html --html-details -o coverage.html
+    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+    COMMENT "Generate HTML coverage report (requires gcovr)"
+)
+
+add_custom_target(clean-coverage
+    COMMAND ${CMAKE_COMMAND} -E echo "Cleaning coverage artifacts..."
+    COMMAND ${CMAKE_COMMAND} -E chdir ${CMAKE_SOURCE_DIR} ${CMAKE_COMMAND} -E env bash ${CMAKE_SOURCE_DIR}/scripts/clean-coverage.sh --full
+    COMMENT "Clean coverage artifacts in build directory"
+)
+
+# Run coverage check script (prints summary, optional --threshold and --html)
+add_custom_target(check-coverage
+    COMMAND ${CMAKE_COMMAND} -E echo "Running coverage check..."
+    COMMAND ${CMAKE_COMMAND} -E chdir ${CMAKE_SOURCE_DIR} ${CMAKE_COMMAND} -E env bash ${CMAKE_SOURCE_DIR}/scripts/check-coverage.sh
+    COMMENT "Run scripts/check-coverage.sh to print coverage summary"
 )
