@@ -11,7 +11,7 @@
  *
  * Example usage:
  *   Question q("What is the capital of Poland?", {"Krakow", "Warsaw",
- * "Gdansk"}, 1); bool correct = q.isCorrect(1); // true
+ * "Gdansk"}, 1); bool correct = q.isCorrect(1); true
  *
  */
 
