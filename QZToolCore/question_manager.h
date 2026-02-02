@@ -22,7 +22,7 @@
 class QuestionManager {
 public:
   QuestionManager() = default;
-  QuestionManager(QMap<uint, Question> questions);
+  QuestionManager(const QMap<uint, Question> &questions);
   bool operator==(const QuestionManager &other) const noexcept;
   bool operator!=(const QuestionManager &other) const noexcept;
 
@@ -37,8 +37,14 @@ public:
                         const QStringList &newAnswers);
   void changeIndexOfCorrectAnswer(const uint indexOfQuestion,
                                   const uint newIndexOfCorrectAnswer);
-  void changeContents(const uint indexOfQuestion, const QString newContents);
+  void changeContents(const uint indexOfQuestion, const QString &newContents);
   void clearQuestions() noexcept;
+
+#ifdef UNIT_TESTING
+  // Test-only setter to control id generator in tests. Only available in test
+  // builds.
+  void setNextIdForTest(uint id);
+#endif
 
   const QMap<uint, Question> &getAllQuestions() const noexcept;
   QMap<uint, Question> copyOfAllQuestions() const;
@@ -48,4 +54,5 @@ public:
 
 private:
   QMap<uint, Question> questions;
+  uint nextId{0};
 };

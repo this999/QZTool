@@ -22,7 +22,8 @@
 class Question {
 public:
   Question() = default;
-  Question(QString contents, QStringList answers, uint indexOfCorrectAnswer);
+  Question(const QString &contents, const QStringList &answers,
+           uint indexOfCorrectAnswer);
 
   bool operator==(const Question &other) const noexcept;
   bool operator!=(const Question &other) const noexcept;

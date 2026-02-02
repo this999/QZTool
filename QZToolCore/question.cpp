@@ -2,7 +2,7 @@
 #include <stdexcept>
 #include <tuple>
 
-Question::Question(QString contents, QStringList answers,
+Question::Question(const QString &contents, const QStringList &answers,
                    uint indexOfCorrectAnswer)
     : contents(contents), answers(answers),
       indexOfCorrectAnswer(indexOfCorrectAnswer) {

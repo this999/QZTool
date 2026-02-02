@@ -1,4 +1,6 @@
+#include <QSet>
 #include <gtest/gtest.h>
+#include <limits>
 
 #include "QZToolCore/question_manager.h"
 
@@ -183,4 +185,33 @@ TEST_F(QuestionManagerTest, findQuestionTest) {
   const auto &question = questionManager.findQuestion(firstIndex);
   EXPECT_EQ(question, firstQuestion);
   EXPECT_THROW(questionManager.findQuestion(999), std::out_of_range);
+}
+
+TEST_F(QuestionManagerTest, idGenerationMonotonicityAfterRemovals) {
+  secondQuestionManager.clearQuestions();
+  secondQuestionManager.addQuestion(firstQuestion);
+  secondQuestionManager.addQuestion(secondQuestion);
+  secondQuestionManager.addQuestion(secondQuestion);
+
+  secondQuestionManager.removeQuestion(1);
+
+  secondQuestionManager.addQuestion(firstQuestion);
+
+  QMap<uint, Question> all = secondQuestionManager.getAllQuestions();
+  QList<uint> keysList = all.keys();
+  QSet<uint> keys;
+  for (const auto &k : keysList) {
+    keys.insert(k);
+  }
+  EXPECT_EQ(static_cast<int>(keys.size()), all.size());
+  EXPECT_GE(all.lastKey(), static_cast<uint>(3));
+}
+
+TEST_F(QuestionManagerTest, overflowThrowsWhenNextIdMax) {
+  const QMap<uint, Question> base{{0, firstQuestion}};
+  QuestionManager qm(base);
+  qm.setNextIdForTest(std::numeric_limits<uint>::max());
+  EXPECT_THROW(qm.addQuestion(firstQuestion), std::overflow_error);
+  EXPECT_THROW(qm.addQuestion(QString{"dummy"}, QStringList{"a"}, 0),
+               std::overflow_error);
 }
