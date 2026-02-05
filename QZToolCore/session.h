@@ -13,24 +13,24 @@
 
 #pragma once
 
-#include <QString>
 #include <QDateTime>
+#include <QString>
 
 class Session {
-    public:
-        Session() = default;
-        Session(const QString &sessionId, const QDateTime &createdAt = QDateTime::currentDateTimeUtc());
+public:
+  Session() = default;
+  Session(const QString &sessionId,
+          const QDateTime &createdAt = QDateTime::currentDateTimeUtc());
 
-        QString getSessionId() const noexcept;
-        QDateTime getCreatedAt() const noexcept;
-        void setSessionId(const QString &sessionId);
-        void setCreatedAt(const QDateTime &createdAt);
+  QString getSessionId() const noexcept;
+  QDateTime getCreatedAt() const noexcept;
+  void setSessionId(const QString &sessionId);
+  void setCreatedAt(const QDateTime &createdAt);
 
-        bool operator==(const Session &other) const noexcept;
-        bool operator!=(const Session &other) const noexcept;
+  bool operator==(const Session &other) const noexcept;
+  bool operator!=(const Session &other) const noexcept;
 
-    private:
-        QString sessionId;
-        QDateTime createdAt;
-
+private:
+  QString sessionId;
+  QDateTime createdAt;
 };
